@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        #calculator {
+            position: absolute;
+            width: 1200px;
+            height: 620px;
+            left: 50%;
+            top: 50%;
+            margin-left: -600px;
+            margin-top: -310px;
+        }
+
+        #calculator #c_title {
+            margin: auto;
+            /*margin-left: 300px;*/
+            width: 800px;
+            height: 80px;
+        }
+
+        #calculator #c_title h2 {
+            text-align: center;
+            font-size: 33px;
+            font-family: "微软雅黑";
+            color: #ffffff;
+            line-height: 30px;
+        }
+
+        #c_text {
+            width: 1000px;
+            margin: auto;
+        }
+
+        #calculator #c_text #text {
+            margin-left: 10px;
+            padding-right: 10px;
+            width: 980px;
+            height: 75px;
+            font-size: 40px;
+            font-family: "微软雅黑";
+            color: #000000;
+            font-weight: bold;
+            text-align: right;
+            border: 1px #ffffff;
+            border-radius: 40px;
+        }
+
+        #calculator #c_value {
+            width: 1080px;
+            height: 408px;
+            /*margin-left: 160px;*/
+            margin: 20px auto;
+        }
+
+        #calculator #c_value ul {
+            margin: 0;
+        }
+
+        #calculator #c_value ul li {
+            margin: 10px;
+            list-style: none;
+            float: left;
+            width: 180px;
+            height: 80px;
+            line-height: 80px;
+            text-align: center;
+            background-color: white;
+            font-size: 30px;
+            font-family: "微软雅黑";
+            color: #000000;
+            font-weight: bold;
+            box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.4);
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            border-radius: 40px;
+        }
+
+        #calculator #c_value ul li:active {
+            background-color: white;
+        }
+
+        #calculator #c_value ul li:hover {
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        #calculator #c_value ul .c_gray {
+            background-color: gray;
+            color: #000000;
+            border-radius: 40px;
+        }
+
+        #calculator #c_value ul .c_black {
+            background-color: black;
+            color: #ffffff;
+            border-radius: 40px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var IsClear = false;
+        var sock = null;
+        var wsuri = "ws://127.0.0.1:1234";
+
+        window.onload = function () {
+
+            console.log("onload");
+    
+            sock = new WebSocket(wsuri);
+
+            sock.onopen = function () {
+                console.log("connected to " + wsuri);
+            }
+
+            sock.onclose = function (e) {
+                console.log("connection closed (" + e.code + ")");
+            }
+
+            sock.onmessage = function (e) {
+                console.log("message received: " + e.data);
+                document.getElementById("text").value = e.data;
+            }
+
+        };
+        var cal = "";
+
+        function get(key) {
+            var str = document.getElementById("text").value;
+            if (IsClear) {
+                str = "0";
+                IsClear = false;
+            }
+            if (str.length < 100) {
+                str = (str == "0" ? "" : str);
+                if (str == "" && key == '00') {
+                    str = "0";
+                } else {
+                    str += key;
+                }
+            }
+            document.getElementById("text").value = str;
+        }
+
+        function goBack() {
+            var str = document.getElementById("text").value;
+            str = str.substring(0, str.length - 1);
+            if (str == "") str = "0";
+            document.getElementById("text").value = str;
+        }
+
+        function clearText() {
+            document.getElementById("text").value = "0";
+        }
+
+        function eq() {
+            
+            IsClear = true;
+
+            var str = document.getElementById("text").value;
+            sock.send(str);
+
+        }
+    </script>
+</head>
+
+<body>
+    <div id="calculator">
+        <div id="c_title">
+            <h2></h2>
+        </div>
+        <div id="c_text">
+            <input type="text" id="text" value="0" readonly="readonly" />
+        </div>
+        <div id="c_value">
+            <ul>
+                <li onclick="get('sin(')" class="c_gray">sin</li>
+                <li onclick="get('cos(')" class="c_gray">cos</li>
+                <li onclick="get('tan(')" class="c_gray">tan</li>
+                <li onclick="get('exp(')" class="c_gray">exp</li>
+                <li onclick="get('ln(')" class="c_gray">ln</li>
+                <li onclick="clearText()" class="c_gray">C</li>
+                <li onclick="get('(')" class="c_gray">(</li>
+                <li onclick="get(')')" class="c_gray">)</li>
+                <li onclick="goBack()" class="c_gray">←</li>
+                <li onclick="get('+')" class="c_gray">+</li>
+                <li onclick="get(7)">7</li>
+                <li onclick="get(8)">8</li>
+                <li onclick="get(9)">9</li>
+                <li onclick="get('%')" class="c_gray">%</li>
+                <li onclick="get('-')" class="c_gray">-</li>
+                <li onclick="get(4)">4</li>
+                <li onclick="get(5)">5</li>
+                <li onclick="get(6)">6</li>
+                <li onclick="get('^2')" class="c_gray">x²</li>
+                <li onclick="get('*')" class="c_gray">×</li>
+                <li onclick="get(1)">1</li>
+                <li onclick="get(2)">2</li>
+                <li onclick="get(3)">3</li>
+                <li onclick="get('^(1/2)')" class="c_gray">√x</li>
+                <li onclick="get('/')" class="c_gray">÷</li>
+                <li onclick="get(0)">0</li>
+                <li onclick="get('00')">00</li>
+                <li onclick="get('.')">.</li>
+                <li onclick="get('^(0-1)')" class="c_gray">D</li>
+                <li onclick="eq()" class="c_black">=</li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
